@@ -95,26 +95,65 @@ public class TaskDataAccess {
      * @param code 取得するタスクのコード
      * @return 取得したタスク
      */
-    // public Task findByCode(int code) {
-    //     try () {
+    public Task findByCode(int code) {
+        Task task = null;
+        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
 
-    //     } catch (IOException e) {
-    //         e.printStackTrace();
-    //     }
-    //     return null;
-    // }
+            String line;
+
+            reader.readLine();
+
+            while ((line = reader.readLine()) != null) {
+                String[] values = line.split(",");
+
+                int taskCode = Integer.parseInt(values[0]);
+
+                if(taskCode != code) continue;
+
+                String name = values[1];
+                int status = Integer.parseInt(values[2]);
+
+                User user = userDataAccess.findByCode(Integer.parseInt(values[3]));
+
+                task = new Task(code, name, status, user);
+
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return task;
+    }
 
     /**
      * タスクデータを更新します。
      * @param updateTask 更新するタスク
      */
-    // public void update(Task updateTask) {
-    //     try () {
+    public void update(Task updateTask) {
+        List<Task> tasks = findAll();
 
-    //     } catch (IOException e) {
-    //         e.printStackTrace();
-    //     }
-    // }
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
+
+            writer.write("Code,Name,Status,Rep_User_Code\n");
+
+            String line;
+            for(Task task : tasks){
+
+                if(task.getCode() == updateTask.getCode()){
+                    line = createLine(updateTask);
+                }else{
+                    line = createLine(task);
+                }
+
+                writer.write(line);
+                writer.newLine();
+            }
+
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     /**
      * コードを基にタスクデータを削除します。

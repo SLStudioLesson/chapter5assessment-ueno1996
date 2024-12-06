@@ -6,7 +6,6 @@ import java.util.List;
 import com.taskapp.dataaccess.LogDataAccess;
 import com.taskapp.dataaccess.TaskDataAccess;
 import com.taskapp.dataaccess.UserDataAccess;
-import com.taskapp.dataaccess.LogDataAccess;
 import com.taskapp.exception.AppException;
 import com.taskapp.model.User;
 import com.taskapp.model.Task;
@@ -54,13 +53,13 @@ public class TaskLogic {
 
         tasks.stream()
             .forEach(task ->{
-                String inChange = "";
+                String inChangeName = "";
                 if(task.getRepUser().getCode() == loginUser.getCode()){
-                    inChange = "あなたが担当しています";
+                    inChangeName = "あなた";
                 }else if(task.getRepUser().getCode() == 1 && task.getRepUser().getCode() != loginUser.getCode()){
-                    inChange = "鈴木一郎が担当しています。";
+                    inChangeName = "鈴木一郎";
                 }else if(task.getRepUser().getCode() == 2 && task.getRepUser().getCode() != loginUser.getCode()){
-                    inChange = "鈴木二郎が担当しています。";
+                    inChangeName = "鈴木二郎";
                 }
 
                 String status = "未着手";
@@ -70,12 +69,10 @@ public class TaskLogic {
                     status = "完了";
                 }
 
-                System.out.println("タスク名:" + task.getName() + ", 担当者名:" + inChange + ", ステータス:" + status);
-
+                System.out.println("タスク名:" + task.getName() + ", 担当者名:" + inChangeName + "が担当しています, ステータス:" + status);
 
             });
-
-
+            System.out.println();
     }
 
     /**
@@ -126,9 +123,26 @@ public class TaskLogic {
      * @param loginUser ログインユーザー
      * @throws AppException タスクコードが存在しない、またはステータスが前のステータスより1つ先でない場合にスローされます
      */
-    // public void changeStatus(int code, int status,
-    //                         User loginUser) throws AppException {
-    // }
+    public void changeStatus(int code, int status,
+                            User loginUser) throws AppException {
+        
+        Task task = taskDataAccess.findByCode(code);
+
+        if(task == null) throw new AppException("存在するタスクコードを入力してください");
+        
+        if(status != (task.getStatus() + 1)) throw new AppException("ステータスは、前のステータスより1つ先のもののみを選択してください");
+
+        task.setStatus(status);
+
+        taskDataAccess.update(task);
+
+        Log log = new Log(code, loginUser.getCode(), status, LocalDate.now());
+        
+        logDataAccess.save(log);
+
+        System.out.println("ステータスの変更が完了しました。");
+        System.out.println();
+    }
 
     /**
      * タスクを削除します。

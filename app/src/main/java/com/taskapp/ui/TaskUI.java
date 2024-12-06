@@ -4,14 +4,12 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-import javax.print.DocFlavor.READER;
-
 import com.taskapp.exception.AppException;
 import com.taskapp.logic.TaskLogic;
 import com.taskapp.logic.UserLogic;
-import com.taskapp.dataaccess.UserDataAccess;
+
 import com.taskapp.model.User;
-import com.taskapp.exception.AppException;
+
 
 public class TaskUI {
     private final BufferedReader reader;
@@ -65,6 +63,7 @@ public class TaskUI {
                 switch (selectMenu) {
                     case "1":
                         taskLogic.showAll(loginUser);
+                        selectSubMenu();
                         break;
                     case "2":
                         inputNewInformation();
@@ -117,7 +116,7 @@ public class TaskUI {
             }catch(AppException e){
                 System.out.println(e.getMessage());
             }
-            
+            System.out.println();
         }
     }
 
@@ -155,8 +154,8 @@ public class TaskUI {
 
                 System.out.print("担当するユーザーのコードを選択してください：");
                 String userCode = reader.readLine();
-                if(!isNumeric(code)){
-                    System.out.println("コードは半角の数字で入力してください");
+                if(!isNumeric(userCode)){
+                    System.out.println("ユーザーのコードは半角の数字で入力してください");
                     System.out.println();
                     continue;
                 }
@@ -191,6 +190,7 @@ public class TaskUI {
                 System.out.println("1. タスクのステータス変更, 2. メインメニューに戻る");
                 System.out.print("選択肢: ");
                 String selectSubmenu = reader.readLine();
+                System.out.println();
 
                 switch (selectSubmenu) {
                     case "1":
@@ -231,22 +231,36 @@ public class TaskUI {
                 }
                 
                 System.out.println("どのステータスに変更するか選択してください。");
-                System.out.print("1. 着手, 2. 完了");
+                System.out.println("1. 着手, 2. 完了");
+                System.out.print("選択肢:");
                 String status = reader.readLine();
                 if(!isNumeric(status)){
-                    System.out.println("コードは半角の数字で入力してください");
+                    System.out.println("ステータスは半角の数字で入力してください");
                     System.out.println();
                     continue;
                 }
 
-                if(status != "1" || status == "2"){
-                    
+                switch (status) {
+                    case "1", "2":
+                        taskLogic.changeStatus(Integer.parseInt(code), Integer.parseInt(status), loginUser);
+                        flg = false;
+                        break;
+                
+                    default:
+                        System.out.println("ステータスは1・2の中から選択してください");
+                        break;
                 }
                 
-
+                continue;
+                
             }catch(IOException e){
                 e.printStackTrace();
+            }catch(AppException e){
+                System.out.println(e.getMessage());
+                System.out.println();
             }
+
+            System.out.println();
             
         }
     }
